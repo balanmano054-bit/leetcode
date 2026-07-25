@@ -1,0 +1,33 @@
+#include <stdlib.h>
+#include <string.h>
+
+char* convert(char* s, int numRows) {
+    int len = strlen(s);
+
+    // Edge cases: if 1 row or string length is less than rows, pattern doesn't change
+    if (numRows <= 1 || len <= numRows) {
+        char* result = (char*)malloc((len + 1) * sizeof(char));
+        strcpy(result, s);
+        return result;
+    }
+
+    char* result = (char*)malloc((len + 1) * sizeof(char));
+    int cycleLen = 2 * numRows - 2;
+    int idx = 0;
+
+    for (int r = 0; r < numRows; r++) {
+        for (int i = r; i < len; i += cycleLen) {
+            // Add the main column character
+            result[idx++] = s[i];
+
+            // For inner rows (not top or bottom), add the diagonal character
+            int diagIdx = i + cycleLen - 2 * r;
+            if (r > 0 && r < numRows - 1 && diagIdx < len) {
+                result[idx++] = s[diagIdx];
+            }
+        }
+    }
+
+    result[len] = '\0'; // Null-terminate string
+    return result;
+}
