@@ -1,0 +1,52 @@
+#include <stdbool.h>
+#include <string.h>
+
+bool isMatch(char* s, char* p) {
+    int sLen = strlen(s);
+    int pLen = strlen(p);
+
+    // dp[i][j] stores whether s[0...i-1] matches p[0...j-1]
+    bool dp[sLen + 1][pLen + 1];
+
+    // Initialize the grid to false
+    for (int i = 0; i <= sLen; i++) {
+        for (int j = 0; j <= pLen; j++) {
+            dp[i][j] = false;
+        }
+    }
+
+    // Base case: empty string matches empty pattern
+    dp[0][0] = true;
+
+    // Base cases for patterns like a*, a*b*, a*b*c* matching an empty string s
+    for (int j = 2; j <= pLen; j++) {
+        if (p[j - 1] == '*') {
+            dp[0][j] = dp[0][j - 2];
+        }
+    }
+
+    for (int i = 1; i <= sLen; i++) {
+        for (int j = 1; j <= pLen; j++) {
+            char pChar = p[j - 1];
+            char sChar = s[i - 1];
+
+            if (pChar == '*') {
+                // Option 1: Treat '*' as matching 0 occurrences of preceding character
+                dp[i][j] = dp[i][j - 2];
+
+                // Option 2: If preceding character matches current char in s, match 1 or more
+                char prevPChar = p[j - 2];
+                if (prevPChar == '.' || prevPChar == sChar) {
+                    dp[i][j] = dp[i][j] || dp[i - 1][j];
+                }
+            } else {
+                // Direct character match or '.' wild card match
+                if (pChar == '.' || pChar == sChar) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                }
+            }
+        }
+    }
+
+    return dp[sLen][pLen];
+}
