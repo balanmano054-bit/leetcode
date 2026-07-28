@@ -1,0 +1,61 @@
+#include <stdlib.h>
+#include <string.h>
+
+// Standard telephone digit to letters mapping
+static const char* PHONE_MAP[] = {
+    "",     // 0
+    "",     // 1
+    "abc",  // 2
+    "def",  // 3
+    "ghi",  // 4
+    "jkl",  // 5
+    "mno",  // 6
+    "pqrs", // 7
+    "tuv",  // 8
+    "wxyz"  // 9
+};
+
+static void backtrack(char* digits, int index, char* current, char** result, int* returnSize) {
+    // Base case: if current combination length equals digits length
+    if (digits[index] == '\0') {
+        result[*returnSize] = (char*)malloc((strlen(current) + 1) * sizeof(char));
+        strcpy(result[*returnSize], current);
+        (*returnSize)++;
+        return;
+    }
+
+    // Get mapped letters for the current digit
+    const char* letters = PHONE_MAP[digits[index] - '0'];
+
+    for (int i = 0; letters[i] != '\0'; i++) {
+        current[index] = letters[i];          // Choose
+        current[index + 1] = '\0';            // Terminate current string
+        backtrack(digits, index + 1, current, result, returnSize); // Explore
+    }
+}
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+char** letterCombinations(char* digits, int* returnSize) {
+    *returnSize = 0;
+    if (digits == NULL || digits[0] == '\0') {
+        return NULL;
+    }
+
+    int len = strlen(digits);
+
+    // Max possible combinations = 4^len (for digits 7 & 9)
+    int maxCombinations = 1;
+    for (int i = 0; i < len; i++) {
+        maxCombinations *= (digits[i] == '7' || digits[i] == '9') ? 4 : 3;
+    }
+
+    char** result = (char**)malloc(maxCombinations * sizeof(char*));
+    char* current = (char*)malloc((len + 1) * sizeof(char));
+
+    backtrack(digits, 0, current, result, returnSize);
+
+    free(current);
+    return result;
+}
