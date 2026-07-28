@@ -1,0 +1,34 @@
+#include <stdlib.h>
+#include <string.h>
+
+char* longestCommonPrefix(char** strs, int strsSize) {
+    if (strsSize == 0) {
+        char* empty = (char*)malloc(1 * sizeof(char));
+        empty[0] = '\0';
+        return empty;
+    }
+
+    // Take the first string as initial reference
+    char* first = strs[0];
+
+    for (int i = 0; first[i] != '\0'; i++) {
+        char c = first[i];
+
+        // Compare char c with the same index across all remaining strings
+        for (int j = 1; j < strsSize; j++) {
+            // Stop if we hit the end of a string or find a character mismatch
+            if (strs[j][i] == '\0' || strs[j][i] != c) {
+                char* result = (char*)malloc((i + 1) * sizeof(char));
+                strncpy(result, first, i);
+                result[i] = '\0';
+                return result;
+            }
+        }
+    }
+
+    // If the entire first string matched across all strings
+    int len = strlen(first);
+    char* result = (char*)malloc((len + 1) * sizeof(char));
+    strcpy(result, first);
+    return result;
+}
