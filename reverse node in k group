@@ -1,0 +1,58 @@
+#include <stdlib.h>
+
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     struct ListNode *next;
+ * };
+ */
+
+// Helper function to get the k-th node from current node
+static struct ListNode* getKthNode(struct ListNode* curr, int k) {
+    while (curr != NULL && k > 0) {
+        curr = curr->next;
+        k--;
+    }
+    return curr;
+}
+
+struct ListNode* reverseKGroup(struct ListNode* head, int k) {
+    if (head == NULL || k == 1) {
+        return head;
+    }
+
+    struct ListNode dummy;
+    dummy.val = 0;
+    dummy.next = head;
+
+    struct ListNode* prevGroup = &dummy;
+
+    while (1) {
+        // Find the k-th node in the current group
+        struct ListNode* kth = getKthNode(prevGroup, k);
+        if (kth == NULL) {
+            break; // Fewer than k nodes remaining, stop processing
+        }
+
+        struct ListNode* nextGroup = kth->next;
+        
+        // Reverse current group of k nodes
+        struct ListNode* prev = nextGroup;
+        struct ListNode* curr = prevGroup->next;
+
+        while (curr != nextGroup) {
+            struct ListNode* temp = curr->next;
+            curr->next = prev;
+            prev = curr;
+            curr = temp;
+        }
+
+        // Reconnect pointers after reversing group
+        struct ListNode* tempGroupHead = prevGroup->next;
+        prevGroup->next = kth;
+        prevGroup = tempGroupHead;
+    }
+
+    return dummy.next;
+}
