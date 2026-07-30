@@ -1,0 +1,14 @@
+#include <string.h>
+#include <stddef.h>
+
+int strStr(char* haystack, char* needle) {
+    // strstr finds the first occurrence of needle in haystack
+    char* ptr = strstr(haystack, needle);
+
+    if (ptr == NULL) {
+        return -1;
+    }
+
+    // Pointer arithmetic gives the 0-based starting index
+    return (int)(ptr - haystack);
+}
