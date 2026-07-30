@@ -1,0 +1,142 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+#define HASH_SIZE 1009
+
+typedef struct Node {
+    char* word;
+    int count;
+    struct Node* next;
+} Node;
+
+typedef struct {
+    Node* buckets[HASH_SIZE];
+} HashMap;
+
+// Polynomial rolling hash for strings
+static unsigned int hash(const char* str, int len) {
+    unsigned int h = 0;
+    for (int i = 0; i < len; i++) {
+        h = h * 31 + str[i];
+    }
+    return h % HASH_SIZE;
+}
+
+static HashMap* createHashMap() {
+    HashMap* map = (HashMap*)calloc(1, sizeof(HashMap));
+    return map;
+}
+
+static void freeHashMap(HashMap* map) {
+    if (!map) return;
+    for (int i = 0; i < HASH_SIZE; i++) {
+        Node* curr = map->buckets[i];
+        while (curr) {
+            Node* temp = curr;
+            curr = curr->next;
+            free(temp);
+        }
+    }
+    free(map);
+}
+
+static void mapPut(HashMap* map, const char* word, int len, int val) {
+    unsigned int h = hash(word, len);
+    Node* curr = map->buckets[h];
+    while (curr) {
+        if (strncmp(curr->word, word, len) == 0 && curr->word[len] == '\0') {
+            curr->count += val;
+            return;
+        }
+        curr = curr->next;
+    }
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->word = (char*)malloc((len + 1) * sizeof(char));
+    strncpy(newNode->word, word, len);
+    newNode->word[len] = '\0';
+    newNode->count = val;
+    newNode->next = map->buckets[h];
+    map->buckets[h] = newNode;
+}
+
+static int mapGet(HashMap* map, const char* word, int len) {
+    unsigned int h = hash(word, len);
+    Node* curr = map->buckets[h];
+    while (curr) {
+        if (strncmp(curr->word, word, len) == 0 && curr->word[len] == '\0') {
+            return curr->count;
+        }
+        curr = curr->next;
+    }
+    return 0;
+}
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int* findSubstring(char* s, char** words, int wordsSize, int* returnSize) {
+    *returnSize = 0;
+    if (!s || !words || wordsSize == 0) return NULL;
+
+    int sLen = strlen(s);
+    int wordLen = strlen(words[0]);
+    int totalLen = wordsSize * wordLen;
+
+    if (sLen < totalLen) return NULL;
+
+    // Build word frequency map for expected words
+    HashMap* wordCountMap = createHashMap();
+    for (int i = 0; i < wordsSize; i++) {
+        mapPut(wordCountMap, words[i], wordLen, 1);
+    }
+
+    int capacity = 100;
+    int* result = (int*)malloc(capacity * sizeof(int));
+
+    // Try wordLen offset starting positions
+    for (int offset = 0; offset < wordLen; offset++) {
+        int left = offset;
+        int right = offset;
+        int count = 0;
+        HashMap* windowMap = createHashMap();
+
+        while (right + wordLen <= sLen) {
+            char* sub = s + right;
+            right += wordLen;
+
+            int expectedCount = mapGet(wordCountMap, sub, wordLen);
+            if (expectedCount > 0) {
+                mapPut(windowMap, sub, wordLen, 1);
+                count++;
+
+                // Shrink window if frequency exceeds requirement
+                while (mapGet(windowMap, sub, wordLen) > expectedCount) {
+                    char* leftSub = s + left;
+                    mapPut(windowMap, leftSub, wordLen, -1);
+                    count--;
+                    left += wordLen;
+                }
+
+                // Valid match found
+                if (count == wordsSize) {
+                    if (*returnSize >= capacity) {
+                        capacity *= 2;
+                        result = (int*)realloc(result, capacity * sizeof(int));
+                    }
+                    result[(*returnSize)++] = left;
+                }
+            } else {
+                // Word not in target words list, reset sliding window
+                freeHashMap(windowMap);
+                windowMap = createHashMap();
+                count = 0;
+                left = right;
+            }
+        }
+        freeHashMap(windowMap);
+    }
+
+    freeHashMap(wordCountMap);
+    return result;
+}
