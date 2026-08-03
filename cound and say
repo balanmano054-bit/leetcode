@@ -1,0 +1,43 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char* countAndSay(int n) {
+    if (n <= 0) return NULL;
+
+    // Allocate memory for current string (base case "1")
+    char* curr = (char*)malloc(2 * sizeof(char));
+    strcpy(curr, "1");
+
+    for (int i = 2; i <= n; i++) {
+        int len = strlen(curr);
+        
+        // Dynamically allocate buffer for the next string sequence
+        // Upper bound multiplier of 2x string length + 1 null terminator
+        char* next = (char*)malloc((len * 2 + 1) * sizeof(char));
+        int nextIdx = 0;
+
+        int j = 0;
+        while (j < len) {
+            int count = 1;
+            // Count consecutive identical characters
+            while (j + 1 < len && curr[j] == curr[j + 1]) {
+                count++;
+                j++;
+            }
+
+            // Append count and digit
+            next[nextIdx++] = count + '0';
+            next[nextIdx++] = curr[j];
+            j++;
+        }
+
+        next[nextIdx] = '\0';
+
+        // Free previous iteration's memory and swap pointer
+        free(curr);
+        curr = next;
+    }
+
+    return curr;
+}
