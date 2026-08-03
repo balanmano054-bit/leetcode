@@ -1,0 +1,32 @@
+#include <stdbool.h>
+
+bool isValidSudoku(char** board, int boardSize, int* boardColSize) {
+    // Tracking matrices for 9 rows, 9 columns, and 9 sub-boxes for numbers '1' through '9'
+    bool rows[9][9] = {false};
+    bool cols[9][9] = {false};
+    bool boxes[9][9] = {false};
+
+    for (int r = 0; r < 9; r++) {
+        for (int c = 0; c < 9; c++) {
+            char cell = board[r][c];
+            if (cell == '.') {
+                continue;
+            }
+
+            int num = cell - '1'; // Map '1'-'9' to index 0-8
+            int boxIndex = (r / 3) * 3 + (c / 3);
+
+            // Check if duplicate digit exists in row, column, or 3x3 sub-box
+            if (rows[r][num] || cols[c][num] || boxes[boxIndex][num]) {
+                return false;
+            }
+
+            // Mark digit as seen
+            rows[r][num] = true;
+            cols[c][num] = true;
+            boxes[boxIndex][num] = true;
+        }
+    }
+
+    return true;
+}
