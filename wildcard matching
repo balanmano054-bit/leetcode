@@ -1,0 +1,38 @@
+#include <stdbool.h>
+
+bool isMatch(char* s, char* p) {
+    int sIdx = 0, pIdx = 0;
+    int starIdx = -1, matchIdx = 0;
+
+    while (s[sIdx] != '\0') {
+        // Case 1: Characters match or pattern has '?'
+        if (p[pIdx] == '?' || p[pIdx] == s[sIdx]) {
+            sIdx++;
+            pIdx++;
+        } 
+        // Case 2: Pattern encounters '*'
+        else if (p[pIdx] == '*') {
+            starIdx = pIdx;     // Track location of '*'
+            matchIdx = sIdx;    // Track current s index matching zero characters
+            pIdx++;
+        } 
+        // Case 3: Mismatch after a previously seen '*' -> Backtrack!
+        else if (starIdx != -1) {
+            pIdx = starIdx + 1; // Reset p pointer to right after '*'
+            matchIdx++;         // Let '*' match one more character in s
+            sIdx = matchIdx;
+        } 
+        // Case 4: Mismatch with no previous '*'
+        else {
+            return false;
+        }
+    }
+
+    // Skip remaining trailing '*' in pattern
+    while (p[pIdx] == '*') {
+        pIdx++;
+    }
+
+    // Valid match only if entire pattern was consumed
+    return p[pIdx] == '\0';
+}
