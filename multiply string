@@ -1,0 +1,51 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char* multiply(char* num1, char* num2) {
+    int len1 = strlen(num1);
+    int len2 = strlen(num2);
+
+    // Handle zero case
+    if ((len1 == 1 && num1[0] == '0') || (len2 == 1 && num2[0] == '0')) {
+        char* zeroRes = (char*)malloc(2 * sizeof(char));
+        strcpy(zeroRes, "0");
+        return zeroRes;
+    }
+
+    // Array to hold intermediate products (max possible length is len1 + len2)
+    int resultLen = len1 + len2;
+    int* pos = (int*)calloc(resultLen, sizeof(int));
+
+    // Multiply digits right-to-left
+    for (int i = len1 - 1; i >= 0; i--) {
+        for (int j = len2 - 1; j >= 0; j--) {
+            int mul = (num1[i] - '0') * (num2[j] - '0');
+            int p1 = i + j;     // Carry position
+            int p2 = i + j + 1; // Direct digit position
+
+            int sum = mul + pos[p2];
+
+            pos[p2] = sum % 10;
+            pos[p1] += sum / 10;
+        }
+    }
+
+    // Convert result array to C string
+    char* result = (char*)malloc((resultLen + 1) * sizeof(char));
+    int idx = 0;
+    int start = 0;
+
+    // Skip leading zero if present
+    while (start < resultLen && pos[start] == 0) {
+        start++;
+    }
+
+    while (start < resultLen) {
+        result[idx++] = pos[start++] + '0';
+    }
+    result[idx] = '\0';
+
+    free(pos);
+    return result;
+}
