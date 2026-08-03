@@ -1,0 +1,60 @@
+#include <stdbool.h>
+
+// State tracking arrays for O(1) checks
+static bool rows[9][9] = {false};
+static bool cols[9][9] = {false};
+static bool boxes[9][9] = {false};
+
+static bool solve(char** board) {
+    for (int r = 0; r < 9; r++) {
+        for (int c = 0; c < 9; c++) {
+            if (board[r][c] == '.') {
+                int boxIndex = (r / 3) * 3 + (c / 3);
+
+                for (char num = '1'; num <= '9'; num++) {
+                    int val = num - '1';
+
+                    // O(1) validation
+                    if (!rows[r][val] && !cols[c][val] && !boxes[boxIndex][val]) {
+                        // Place digit
+                        board[r][c] = num;
+                        rows[r][val] = cols[c][val] = boxes[boxIndex][val] = true;
+
+                        // Recurse
+                        if (solve(board)) {
+                            return true;
+                        }
+
+                        // Backtrack
+                        board[r][c] = '.';
+                        rows[r][val] = cols[c][val] = boxes[boxIndex][val] = false;
+                    }
+                }
+                return false; // No valid placement found for this cell
+            }
+        }
+    }
+    return true; // Entire board solved
+}
+
+void solveSudoku(char** board, int boardSize, int* boardColSize) {
+    // Reset state tracking
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            rows[i][j] = cols[i][j] = boxes[i][j] = false;
+        }
+    }
+
+    // Populate tracking structures with initial numbers
+    for (int r = 0; r < 9; r++) {
+        for (int c = 0; c < 9; c++) {
+            if (board[r][c] != '.') {
+                int val = board[r][c] - '1';
+                int boxIndex = (r / 3) * 3 + (c / 3);
+                rows[r][val] = cols[c][val] = boxes[boxIndex][val] = true;
+            }
+        }
+    }
+
+    solve(board);
+}
