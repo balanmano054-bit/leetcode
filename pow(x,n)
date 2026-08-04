@@ -1,0 +1,28 @@
+#include <stdio.h>
+
+double myPow(double x, int n) {
+    long long N = n; // Cast to 64-bit int to avoid overflow when n = INT_MIN
+
+    // Handle negative exponents
+    if (N < 0) {
+        x = 1.0 / x;
+        N = -N;
+    }
+
+    double result = 1.0;
+    double currentProduct = x;
+
+    // Iterative Binary Exponentiation
+    while (N > 0) {
+        // If N is odd, multiply current product into result
+        if (N % 2 == 1) {
+            result *= currentProduct;
+        }
+
+        // Square the base and halve exponent
+        currentProduct *= currentProduct;
+        N /= 2;
+    }
+
+    return result;
+}
