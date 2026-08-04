@@ -1,0 +1,78 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+// Comparison function for qsort
+static int compare(const void* a, const void* b) {
+    return (*(int*)a - *(int*)b);
+}
+
+static void backtrack(int* nums, int numsSize, bool* visited,
+                      int* currentPerm, int currentSize,
+                      int*** result, int* resultSize, int** columnSizes, int* capacity) {
+    // Base case: full permutation formed
+    if (currentSize == numsSize) {
+        if (*resultSize >= *capacity) {
+            *capacity *= 2;
+            *result = (int**)realloc(*result, (*capacity) * sizeof(int*));
+            *columnSizes = (int*)realloc(*columnSizes, (*capacity) * sizeof(int));
+        }
+
+        // Copy current permutation into result
+        (*result)[*resultSize] = (int*)malloc(numsSize * sizeof(int));
+        for (int i = 0; i < numsSize; i++) {
+            (*result)[*resultSize][i] = currentPerm[i];
+        }
+        (*columnSizes)[*resultSize] = numsSize;
+        (*resultSize)++;
+        return;
+    }
+
+    for (int i = 0; i < numsSize; i++) {
+        // Skip already visited elements
+        if (visited[i]) {
+            continue;
+        }
+
+        // Duplicate Pruning: Skip duplicate elements when previous duplicate wasn't visited
+        if (i > 0 && nums[i] == nums[i - 1] && !visited[i - 1]) {
+            continue;
+        }
+
+        // Choose element
+        visited[i] = true;
+        currentPerm[currentSize] = nums[i];
+
+        // Recurse
+        backtrack(nums, numsSize, visited, currentPerm, currentSize + 1,
+                  result, resultSize, columnSizes, capacity);
+
+        // Backtrack
+        visited[i] = false;
+    }
+}
+
+/**
+ * Return an array of arrays of size *returnSize.
+ * The sizes of the arrays are returned as *returnColumnSizes array.
+ * Note: Both returned array and *columnSizes array must be malloced, assume caller calls free().
+ */
+int** permuteUnique(int* nums, int numsSize, int* returnSize, int** returnColumnSizes) {
+    // Sort array so duplicate elements are adjacent
+    qsort(nums, numsSize, sizeof(int), compare);
+
+    int capacity = 100;
+    int** result = (int**)malloc(capacity * sizeof(int*));
+    *returnColumnSizes = (int*)malloc(capacity * sizeof(int));
+    *returnSize = 0;
+
+    bool* visited = (bool*)calloc(numsSize, sizeof(bool));
+    int* currentPerm = (int*)malloc(numsSize * sizeof(int));
+
+    backtrack(nums, numsSize, visited, currentPerm, 0,
+              &result, returnSize, returnColumnSizes, &capacity);
+
+    free(visited);
+    free(currentPerm);
+    return result;
+}
