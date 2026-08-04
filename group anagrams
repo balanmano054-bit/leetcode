@@ -1,0 +1,111 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+#define TABLE_SIZE 10007 // Prime number for hash table capacity
+
+// Structure for hash map node storing an anagram group
+typedef struct HashNode {
+    char* key;                // Character frequency signature key
+    char** group;             // Array of strings belonging to this anagram group
+    int size;                 // Current size of group
+    int capacity;             // Allocated capacity of group
+    struct HashNode* next;    // Hash collision linked-list chaining
+} HashNode;
+
+// Simple string hash function (djb2 algorithm)
+static unsigned long hashString(const char* str) {
+    unsigned long hash = 5381;
+    int c;
+    while ((c = *str++)) {
+        hash = ((hash << 5) + hash) + c;
+    }
+    return hash % TABLE_SIZE;
+}
+
+// Generate frequency signature key for a string (e.g., "a1b2c0...")
+static void getFrequencyKey(const char* str, char* keyBuffer) {
+    int count[26] = {0};
+    for (int i = 0; str[i] != '\0'; i++) {
+        count[str[i] - 'a']++;
+    }
+
+    int pos = 0;
+    for (int i = 0; i < 26; i++) {
+        pos += sprintf(keyBuffer + pos, "#%d", count[i]);
+    }
+}
+
+/**
+ * Return an array of arrays of size *returnSize.
+ * The sizes of the arrays are returned as *returnColumnSizes array.
+ * Note: Both returned array and *columnSizes array must be malloced, assume caller calls free().
+ */
+char*** groupAnagrams(char** strs, int strsSize, int* returnSize, int** returnColumnSizes) {
+    HashNode** hashTable = (HashNode**)calloc(TABLE_SIZE, sizeof(HashNode*));
+    int groupCount = 0;
+
+    for (int i = 0; i < strsSize; i++) {
+        char key[128]; // Buffer for frequency signature string
+        getFrequencyKey(strs[i], key);
+
+        unsigned long hash = hashString(key);
+        HashNode* node = hashTable[hash];
+        HashNode* targetNode = NULL;
+
+        // Check if key already exists in hash bucket
+        while (node != NULL) {
+            if (strcmp(node->key, key) == 0) {
+                targetNode = node;
+                break;
+            }
+            node = node->next;
+        }
+
+        // If key not found, create new group
+        if (targetNode == NULL) {
+            targetNode = (HashNode*)malloc(sizeof(HashNode));
+            targetNode->key = strdup(key);
+            targetNode->capacity = 8;
+            targetNode->size = 0;
+            targetNode->group = (char**)malloc(targetNode->capacity * sizeof(char*));
+            
+            // Insert at head of linked list in hash table
+            targetNode->next = hashTable[hash];
+            hashTable[hash] = targetNode;
+            
+            groupCount++;
+        }
+
+        // Append original string to the target node's group
+        if (targetNode->size >= targetNode->capacity) {
+            targetNode->capacity *= 2;
+            targetNode->group = (char**)realloc(targetNode->group, targetNode->capacity * sizeof(char*));
+        }
+        targetNode->group[targetNode->size++] = strs[i];
+    }
+
+    // Allocate results output arrays
+    char*** result = (char***)malloc(groupCount * sizeof(char**));
+    *returnColumnSizes = (int*)malloc(groupCount * sizeof(int));
+    *returnSize = groupCount;
+
+    int resIdx = 0;
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        HashNode* node = hashTable[i];
+        while (node != NULL) {
+            result[resIdx] = node->group;
+            (*returnColumnSizes)[resIdx] = node->size;
+            resIdx++;
+
+            HashNode* temp = node;
+            node = node->next;
+            free(temp->key);
+            free(temp);
+        }
+    }
+
+    free(hashTable);
+    return result;
+}
