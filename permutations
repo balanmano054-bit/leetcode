@@ -1,0 +1,56 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+static void swap(int* a, int* b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+static void backtrack(int* nums, int numsSize, int start, 
+                      int*** result, int* resultSize, int** columnSizes, int* capacity) {
+    // Base case: full permutation formed
+    if (start == numsSize) {
+        if (*resultSize >= *capacity) {
+            *capacity *= 2;
+            *result = (int**)realloc(*result, (*capacity) * sizeof(int*));
+            *columnSizes = (int*)realloc(*columnSizes, (*capacity) * sizeof(int));
+        }
+
+        // Copy current permutation into result
+        (*result)[*resultSize] = (int*)malloc(numsSize * sizeof(int));
+        for (int i = 0; i < numsSize; i++) {
+            (*result)[*resultSize][i] = nums[i];
+        }
+        (*columnSizes)[*resultSize] = numsSize;
+        (*resultSize)++;
+        return;
+    }
+
+    for (int i = start; i < numsSize; i++) {
+        // Swap to place candidate element at current position
+        swap(&nums[start], &nums[i]);
+
+        // Recurse for remaining positions
+        backtrack(nums, numsSize, start + 1, result, resultSize, columnSizes, capacity);
+
+        // Backtrack: restore original order
+        swap(&nums[start], &nums[i]);
+    }
+}
+
+/**
+ * Return an array of arrays of size *returnSize.
+ * The sizes of the arrays are returned as *returnColumnSizes array.
+ * Note: Both returned array and *columnSizes array must be malloced, assume caller calls free().
+ */
+int** permute(int* nums, int numsSize, int* returnSize, int** returnColumnSizes) {
+    int capacity = 100;
+    int** result = (int**)malloc(capacity * sizeof(int*));
+    *returnColumnSizes = (int*)malloc(capacity * sizeof(int));
+    *returnSize = 0;
+
+    backtrack(nums, numsSize, 0, &result, returnSize, returnColumnSizes, &capacity);
+
+    return result;
+}
