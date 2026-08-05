@@ -1,0 +1,24 @@
+#include <stdbool.h>
+
+bool canJump(int* nums, int numsSize) {
+    int maxReach = 0;
+
+    for (int i = 0; i < numsSize; i++) {
+        // If the current index is beyond the maximum reachable index, we're stuck
+        if (i > maxReach) {
+            return false;
+        }
+
+        // Update the maximum reach from the current index
+        if (i + nums[i] > maxReach) {
+            maxReach = i + nums[i];
+        }
+
+        // Early exit: if maxReach reaches or passes the last index
+        if (maxReach >= numsSize - 1) {
+            return true;
+        }
+    }
+
+    return true;
+}
