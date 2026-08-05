@@ -1,0 +1,57 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int* spiralOrder(int** matrix, int matrixSize, int* matrixColSize, int* returnSize) {
+    if (matrixSize == 0 || matrixColSize[0] == 0) {
+        *returnSize = 0;
+        return NULL;
+    }
+
+    int rows = matrixSize;
+    int cols = matrixColSize[0];
+    int totalElements = rows * cols;
+
+    int* result = (int*)malloc(totalElements * sizeof(int));
+    *returnSize = totalElements;
+
+    int top = 0;
+    int bottom = rows - 1;
+    int left = 0;
+    int right = cols - 1;
+    int idx = 0;
+
+    while (top <= bottom && left <= right) {
+        // Traverse Right
+        for (int c = left; c <= right; c++) {
+            result[idx++] = matrix[top][c];
+        }
+        top++;
+
+        // Traverse Down
+        for (int r = top; r <= bottom; r++) {
+            result[idx++] = matrix[r][right];
+        }
+        right--;
+
+        // Traverse Left (if rows remain)
+        if (top <= bottom) {
+            for (int c = right; c >= left; c--) {
+                result[idx++] = matrix[bottom][c];
+            }
+            bottom--;
+        }
+
+        // Traverse Up (if columns remain)
+        if (left <= right) {
+            for (int r = bottom; r >= top; r--) {
+                result[idx++] = matrix[r][left];
+            }
+            left++;
+        }
+    }
+
+    return result;
+}
