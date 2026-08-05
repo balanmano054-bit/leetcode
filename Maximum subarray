@@ -1,0 +1,22 @@
+#include <stdio.h>
+
+int maxSubArray(int* nums, int numsSize) {
+    int maxSum = nums[0];
+    int currentSum = nums[0];
+
+    for (int i = 1; i < numsSize; i++) {
+        // Decide whether to extend the current subarray or start a new one from nums[i]
+        if (currentSum + nums[i] > nums[i]) {
+            currentSum += nums[i];
+        } else {
+            currentSum = nums[i];
+        }
+
+        // Update the global maximum sum
+        if (currentSum > maxSum) {
+            maxSum = currentSum;
+        }
+    }
+
+    return maxSum;
+}
