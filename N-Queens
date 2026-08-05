@@ -1,0 +1,79 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+static void backtrack(int row, int n, int* queens, 
+                      bool* cols, bool* diag1, bool* diag2,
+                      char**** result, int* resultSize, int* capacity) {
+    if (row == n) {
+        // Double capacity if result array is full
+        if (*resultSize >= *capacity) {
+            *capacity *= 2;
+            *result = (char***)realloc(*result, (*capacity) * sizeof(char**));
+        }
+
+        // Construct 2D board string array for current solution
+        char** board = (char**)malloc(n * sizeof(char*));
+        for (int i = 0; i < n; i++) {
+            board[i] = (char*)malloc((n + 1) * sizeof(char));
+            memset(board[i], '.', n);
+            board[i][queens[i]] = 'Q';
+            board[i][n] = '\0';
+        }
+
+        (*result)[*resultSize] = board;
+        (*resultSize)++;
+        return;
+    }
+
+    for (int col = 0; col < n; col++) {
+        int d1 = row - col + n - 1; // Primary diagonal index
+        int d2 = row + col;         // Anti-diagonal index
+
+        if (cols[col] || diag1[d1] || diag2[d2]) {
+            continue; // Under attack, skip
+        }
+
+        // Place queen
+        queens[row] = col;
+        cols[col] = diag1[d1] = diag2[d2] = true;
+
+        // Recurse to next row
+        backtrack(row + 1, n, queens, cols, diag1, diag2, result, resultSize, capacity);
+
+        // Backtrack
+        cols[col] = diag1[d1] = diag2[d2] = false;
+    }
+}
+
+/**
+ * Return an array of arrays of size *returnSize.
+ * The sizes of the arrays are returned as *returnColumnSizes array.
+ * Note: Both returned array and *columnSizes array must be malloced, assume caller calls free().
+ */
+char*** solveNQueens(int n, int* returnSize, int** returnColumnSizes) {
+    int capacity = 100;
+    char*** result = (char***)malloc(capacity * sizeof(char**));
+    *returnSize = 0;
+
+    int* queens = (int*)malloc(n * sizeof(int));
+    bool* cols = (bool*)calloc(n, sizeof(bool));
+    bool* diag1 = (bool*)calloc(2 * n - 1, sizeof(bool));
+    bool* diag2 = (bool*)calloc(2 * n - 1, sizeof(bool));
+
+    backtrack(0, n, queens, cols, diag1, diag2, &result, returnSize, &capacity);
+
+    // Set output column sizes array (each board in the result is n x n)
+    *returnColumnSizes = (int*)malloc((*returnSize) * sizeof(int));
+    for (int i = 0; i < *returnSize; i++) {
+        (*returnColumnSizes)[i] = n;
+    }
+
+    free(queens);
+    free(cols);
+    free(diag1);
+    free(diag2);
+
+    return result;
+}
