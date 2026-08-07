@@ -1,0 +1,57 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+/**
+ * Return an array of arrays of size *returnSize.
+ * The sizes of the arrays are returned as *returnColumnSizes array.
+ * Note: Both returned array and *columnSizes array must be malloced, assume caller calls free().
+ */
+int** generateMatrix(int n, int* returnSize, int** returnColumnSizes) {
+    // Allocate rows array
+    int** matrix = (int**)malloc(n * sizeof(int*));
+    *returnColumnSizes = (int*)malloc(n * sizeof(int));
+    *returnSize = n;
+
+    for (int i = 0; i < n; i++) {
+        matrix[i] = (int*)malloc(n * sizeof(int));
+        (*returnColumnSizes)[i] = n;
+    }
+
+    int top = 0;
+    int bottom = n - 1;
+    int left = 0;
+    int right = n - 1;
+    int val = 1;
+
+    while (top <= bottom && left <= right) {
+        // Fill top row (left to right)
+        for (int c = left; c <= right; c++) {
+            matrix[top][c] = val++;
+        }
+        top++;
+
+        // Fill right column (top to bottom)
+        for (int r = top; r <= bottom; r++) {
+            matrix[r][right] = val++;
+        }
+        right--;
+
+        // Fill bottom row (right to left)
+        if (top <= bottom) {
+            for (int c = right; c >= left; c--) {
+                matrix[bottom][c] = val++;
+            }
+            bottom--;
+        }
+
+        // Fill left column (bottom to top)
+        if (left <= right) {
+            for (int r = bottom; r >= top; r--) {
+                matrix[r][left] = val++;
+            }
+            left++;
+        }
+    }
+
+    return matrix;
+}
