@@ -1,0 +1,41 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+char* getPermutation(int n, int k) {
+    // Array to store numbers [1, 2, ..., n]
+    int numbers[10];
+    // Factorial precomputation table
+    int factorial[10];
+    
+    factorial[0] = 1;
+    for (int i = 1; i <= n; i++) {
+        numbers[i - 1] = i;
+        factorial[i] = factorial[i - 1] * i;
+    }
+
+    // Allocate result string (n digits + null terminator)
+    char* result = (char*)malloc((n + 1) * sizeof(char));
+    result[n] = '\0';
+
+    // Convert k to 0-based index
+    k--;
+
+    int numSize = n;
+    for (int i = 0; i < n; i++) {
+        int fact = factorial[numSize - 1];
+        int idx = k / fact;
+
+        // Select the idx-th candidate number
+        result[i] = numbers[idx] + '0';
+
+        // Remove the selected number from candidate list
+        for (int j = idx; j < numSize - 1; j++) {
+            numbers[j] = numbers[j + 1];
+        }
+
+        k %= fact;
+        numSize--;
+    }
+
+    return result;
+}
