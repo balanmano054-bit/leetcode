@@ -1,0 +1,45 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     struct ListNode *next;
+ * };
+ */
+struct ListNode* rotateRight(struct ListNode* head, int k) {
+    if (head == NULL || head->next == NULL || k == 0) {
+        return head;
+    }
+
+    // Step 1: Find the length of the list and the tail node
+    int length = 1;
+    struct ListNode* tail = head;
+    while (tail->next != NULL) {
+        tail = tail->next;
+        length++;
+    }
+
+    // Step 2: Normalize k
+    k = k % length;
+    if (k == 0) {
+        return head; // No rotation needed
+    }
+
+    // Step 3: Connect tail to head to form a circular ring
+    tail->next = head;
+
+    // Step 4: Find the new tail: (length - k) steps from head
+    int stepsToNewTail = length - k;
+    struct ListNode* newTail = tail;
+    for (int i = 0; i < stepsToNewTail; i++) {
+        newTail = newTail->next;
+    }
+
+    // Step 5: Disconnect ring to set new head and tail
+    struct ListNode* newHead = newTail->next;
+    newTail->next = NULL;
+
+    return newHead;
+}
