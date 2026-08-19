@@ -1,0 +1,25 @@
+#include <stdio.h>
+
+int mySqrt(int x) {
+    if (x < 2) {
+        return x;
+    }
+
+    int left = 1;
+    int right = x;
+    int result = 0;
+
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+
+        // Division prevents integer overflow instead of mid * mid <= x
+        if (mid <= x / mid) {
+            result = mid;     // Valid floor square root candidate
+            left = mid + 1;   // Try to find a larger value
+        } else {
+            right = mid - 1;  // Value too large
+        }
+    }
+
+    return result;
+}
