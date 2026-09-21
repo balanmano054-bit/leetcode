@@ -1,0 +1,79 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <limits.h>
+
+char* minWindow(char* s, char* t) {
+    int sLen = strlen(s);
+    int tLen = strlen(t);
+
+    if (sLen == 0 || tLen == 0 || sLen < tLen) {
+        char* emptyStr = (char*)malloc(1 * sizeof(char));
+        emptyStr[0] = '\0';
+        return emptyStr;
+    }
+
+    int targetFreq[128] = {0};
+    int windowFreq[128] = {0};
+
+    // Calculate character frequencies in t
+    for (int i = 0; i < tLen; i++) {
+        targetFreq[(unsigned char)t[i]]++;
+    }
+
+    // Count unique characters needed
+    int requiredCount = 0;
+    for (int i = 0; i < 128; i++) {
+        if (targetFreq[i] > 0) {
+            requiredCount++;
+        }
+    }
+
+    int left = 0, right = 0;
+    int formedCount = 0;
+
+    int minLen = INT_MAX;
+    int minStart = 0;
+
+    while (right < sLen) {
+        unsigned char c = (unsigned char)s[right];
+        windowFreq[c]++;
+
+        // Increment formedCount when frequency of current character matches targetFreq
+        if (targetFreq[c] > 0 && windowFreq[c] == targetFreq[c]) {
+            formedCount++;
+        }
+
+        // Try to shrink window from left once all characters are matched
+        while (left <= right && formedCount == requiredCount) {
+            int currentLen = right - left + 1;
+            if (currentLen < minLen) {
+                minLen = currentLen;
+                minStart = left;
+            }
+
+            unsigned char leftChar = (unsigned char)s[left];
+            windowFreq[leftChar]--;
+
+            if (targetFreq[leftChar] > 0 && windowFreq[leftChar] < targetFreq[leftChar]) {
+                formedCount--;
+            }
+
+            left++;
+        }
+
+        right++;
+    }
+
+    if (minLen == INT_MAX) {
+        char* emptyStr = (char*)malloc(1 * sizeof(char));
+        emptyStr[0] = '\0';
+        return emptyStr;
+    }
+
+    char* result = (char*)malloc((minLen + 1) * sizeof(char));
+    strncpy(result, s + minStart, minLen);
+    result[minLen] = '\0';
+
+    return result;
+}
