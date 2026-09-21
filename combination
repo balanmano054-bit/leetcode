@@ -1,0 +1,56 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Helper function to calculate n Choose k for pre-allocating memory
+static int nChooseK(int n, int k) {
+    if (k < 0 || k > n) return 0;
+    if (k == 0 || k == n) return 1;
+    if (k > n / 2) k = n - k;
+    
+    long long res = 1;
+    for (int i = 1; i <= k; i++) {
+        res = res * (n - k + i) / i;
+    }
+    return (int)res;
+}
+
+static void backtrack(int start, int n, int k, int* path, int pathSize, 
+                      int** result, int* returnSize, int** returnColumnSizes) {
+    // Base case: combination reached size k
+    if (pathSize == k) {
+        result[*returnSize] = (int*)malloc(k * sizeof(int));
+        for (int i = 0; i < k; i++) {
+            result[*returnSize][i] = path[i];
+        }
+        (*returnColumnSizes)[*returnSize] = k;
+        (*returnSize)++;
+        return;
+    }
+
+    // Pruning: Stop if there aren't enough remaining numbers to reach size k
+    int remainingNeeded = k - pathSize;
+    for (int i = start; i <= n - remainingNeeded + 1; i++) {
+        path[pathSize] = i;
+        backtrack(i + 1, n, k, path, pathSize + 1, result, returnSize, returnColumnSizes);
+    }
+}
+
+/**
+ * Return an array of arrays of size *returnSize.
+ * The sizes of the arrays are returned as *returnColumnSizes array.
+ * Note: Both returned array and *columnSizes array must be malloced, assume caller calls free().
+ */
+int** combine(int n, int k, int* returnSize, int** returnColumnSizes) {
+    int totalCombinations = nChooseK(n, k);
+
+    int** result = (int**)malloc(totalCombinations * sizeof(int*));
+    *returnColumnSizes = (int*)malloc(totalCombinations * sizeof(int));
+    *returnSize = 0;
+
+    int* path = (int*)malloc(k * sizeof(int));
+
+    backtrack(1, n, k, path, 0, result, returnSize, returnColumnSizes);
+
+    free(path);
+    return result;
+}
