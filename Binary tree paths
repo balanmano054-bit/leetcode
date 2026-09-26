@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     struct TreeNode *left;
+ *     struct TreeNode *right;
+ * };
+ */
+
+void dfs(struct TreeNode* node, int* path, int pathLen, char** result, int* returnSize) {
+    if (!node) return;
+
+    // Add current node to path array
+    path[pathLen++] = node->val;
+
+    // If it's a leaf node, build path string "1->2->5"
+    if (!node->left && !node->right) {
+        // Allocate buffer for formatted path string
+        char* buffer = (char*)malloc(1024 * sizeof(char));
+        int pos = 0;
+
+        for (int i = 0; i < pathLen; i++) {
+            if (i > 0) {
+                pos += sprintf(buffer + pos, "->");
+            }
+            pos += sprintf(buffer + pos, "%d", path[i]);
+        }
+
+        result[*returnSize] = buffer;
+        (*returnSize)++;
+        return;
+    }
+
+    // Recurse left and right
+    dfs(node->left, path, pathLen, result, returnSize);
+    dfs(node->right, path, pathLen, result, returnSize);
+}
+
+char** binaryTreePaths(struct TreeNode* root, int* returnSize) {
+    *returnSize = 0;
+    if (!root) return NULL;
+
+    // Maximum 100 paths for up to 100 nodes
+    char** result = (char**)malloc(100 * sizeof(char*));
+    int path[100];
+
+    dfs(root, path, 0, result, returnSize);
+
+    return result;
+}
