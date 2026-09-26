@@ -1,0 +1,58 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+// Memoization table: memo[len][i][j]
+// -1: uncomputed, 0: false, 1: true
+static int memo[31][30][30];
+
+static bool solve(char* s1, char* s2, int len, int i, int j) {
+    if (memo[len][i][j] != -1) {
+        return memo[len][i][j];
+    }
+
+    // Base Case 1: Strings are identical
+    if (strncmp(s1 + i, s2 + j, len) == 0) {
+        return memo[len][i][j] = 1;
+    }
+
+    // Base Case 2: Pruning via character frequency check
+    int count[26] = {0};
+    for (int k = 0; k < len; k++) {
+        count[s1[i + k] - 'a']++;
+        count[s2[j + k] - 'a']--;
+    }
+    for (int k = 0; k < 26; k++) {
+        if (count[k] != 0) {
+            return memo[len][i][j] = 0;
+        }
+    }
+
+    // Check all possible split points
+    for (int k = 1; k < len; k++) {
+        // Case 1: Without swapping substrings
+        if (solve(s1, s2, k, i, j) && solve(s1, s2, len - k, i + k, j + k)) {
+            return memo[len][i][j] = 1;
+        }
+
+        // Case 2: With swapping substrings
+        if (solve(s1, s2, k, i, j + len - k) && solve(s1, s2, len - k, i + k, j)) {
+            return memo[len][i][j] = 1;
+        }
+    }
+
+    return memo[len][i][j] = 0;
+}
+
+bool isScramble(char* s1, char* s2) {
+    int len1 = strlen(s1);
+    int len2 = strlen(s2);
+
+    if (len1 != len2) return false;
+
+    // Initialize memoization table with -1
+    memset(memo, -1, sizeof(memo));
+
+    return solve(s1, s2, len1, 0, 0);
+}
