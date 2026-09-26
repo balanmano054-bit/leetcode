@@ -1,0 +1,42 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     struct ListNode *next;
+ * };
+ */
+
+struct ListNode* partition(struct ListNode* head, int x) {
+    // Dummy heads for the two partitions
+    struct ListNode lessDummy;
+    struct ListNode greaterDummy;
+    
+    lessDummy.next = NULL;
+    greaterDummy.next = NULL;
+
+    struct ListNode* less = &lessDummy;
+    struct ListNode* greater = &greaterDummy;
+    struct ListNode* curr = head;
+
+    while (curr) {
+        if (curr->val < x) {
+            less->next = curr;
+            less = less->next;
+        } else {
+            greater->next = curr;
+            greater = greater->next;
+        }
+        curr = curr->next;
+    }
+
+    // Terminate the greater list to avoid cycle pointers
+    greater->next = NULL;
+    
+    // Connect the less list to the start of the greater list
+    less->next = greaterDummy.next;
+
+    return lessDummy.next;
+}
